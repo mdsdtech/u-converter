@@ -39,10 +39,26 @@
       >
     Reset
   </button>
-
+<!-- 
       <div v-if="output" class="mt-6 bg-gray-100 p-4 rounded-lg break-all">
         <strong>Output:</strong>
         <p class="mt-2">{{ output }}</p>
+      </div> -->
+      <div v-if="output" class="mt-4 bg-gray-100 p-4 rounded-lg break-all">
+        <label class="block mb-2 font-bold">Converted Config:</label>
+        <div class="relative">
+          <textarea
+            class="w-full h-32 rounded-md p-4 pr-20 bg-gray-50"
+            readonly
+            :value="output"
+          ></textarea>
+          <button
+            class="absolute top-2 right-2 px-4 py-1 bg-green-500 text-white text-sm rounded hover:bg-green-600"
+            @click="copyToClipboard"
+          >
+            Copy
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -88,5 +104,13 @@ const reset = () => {
   output.value = ''
   tab.value = tabs[0]
   document.querySelector('textarea').focus()
+}
+
+const copyToClipboard = () => {
+  navigator.clipboard.writeText(output.value).then(() => {
+    alert('Copied to clipboard!')
+  }).catch(err => {
+    console.error('Failed to copy: ', err)
+  })
 }
 </script>
