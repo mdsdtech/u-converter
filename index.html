@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>VMess to VLESS (WS Converter)</title>
+    <style>
+        /* Same CSS as previous converter */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>VMess to VLESS (WebSocket)</h1>
+        <textarea id="input" placeholder="Paste VMess WS config/link..."></textarea>
+        <button onclick="convertWS()">Convert WS to VLESS</button>
+        <div id="error" class="warning"></div>
+        <textarea id="output" readonly></textarea>
+    </div>
+
+    <script>
+        function convertWS() {
+            const input = document.getElementById('input').value.trim();
+            const errorElement = document.getElementById('error');
+            errorElement.textContent = '';
+
+            try {
+                let config = input.startsWith('vmess://') 
+                    ? parseVmessLink(input)
+                    : JSON.parse(input);
+
+                // Validate WS requirements
+                if (config.type !== 'ws') {
+                    throw new Error('Not a WebSocket configuration');
+                }
+
+                // Convert to VLESS WS
+                const vlessWS = {
+                    protocol: "vless",
+                    add: config.add,
+                    port: config.port,
+                    id: config.id,
+                    flow: config.tls ? "xtls-rprx-vision" : "",
+                    type: "ws",
+                    path: config.path || "/",
+                    tls: config.tls || "none",
+                    sni: config.sni || config.host || "",
+                    ps: config.ps ? config.ps.replace('VMess', 'VLESS') : 'VLESS-WS'
+                };
+
+                document.getElementById('output').value = generateWSLink(vlessWS);
+            } catch (e) {
+                errorElement.textContent = `Error: ${e.message}`;
+            }
+        }
+
+        function generateWSLink(config) {
+            const params = new URLSearchParams({
+                type: 'ws',
+                path: encodeURIComponent(config.path),
+                security: config.tls,
+                sni: config.sni,
+                flow: config.flow
+            });
+
+            return `vless://${config.id}@${config.add}:${config.port}?${params.toString()}#${encodeURIComponent(config.ps)}`;
+        }
+
+        // Keep parseVmessLink() and copyOutput() from previous code
+    </script>
+</body>
+</html>
